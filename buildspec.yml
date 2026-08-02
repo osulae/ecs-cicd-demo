@@ -1,0 +1,47 @@
+version: 0.2
+
+phases:
+
+  pre_build:
+
+    commands:
+
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+      - REGION=$AWS_DEFAULT_REGION
+
+      - REPOSITORY=ecs-cicd-demo
+
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c1-7)
+
+      - aws ecr get-login-password \
+        | docker login \
+        --username AWS \
+        --password-stdin \
+        $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
+  build:
+
+    commands:
+
+      - docker build -t $REPOSITORY:$IMAGE_TAG .
+
+      - docker tag \
+        $REPOSITORY:$IMAGE_TAG \
+        $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY:$IMAGE_TAG
+
+  post_build:
+
+    commands:
+
+      - docker push \
+        $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY:$IMAGE_TAG
+
+      - printf '[{"name":"app","imageUri":"%s"}]' \
+        $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY:$IMAGE_TAG \
+        > imagedefinitions.json
+
+artifacts:
+
+  files:
+    - imagedefinitions.json
