@@ -22,7 +22,7 @@ phases:
   post_build:
     commands:
       - docker push ${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${REPOSITORY}:${IMAGE_TAG}
-      - printf '[{"name":"app","imageUri":"%s"}]' ${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${REPOSITORY}:${IMAGE_TAG} > imagedefinitions.json
+      - printf '[{"name":"nginx","imageUri":"%s"}]' ${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${REPOSITORY}:${IMAGE_TAG} > imagedefinitions.json
 
 artifacts:
   files:
